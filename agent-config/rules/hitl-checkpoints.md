@@ -1,0 +1,34 @@
+# HITL Checkpoint Protocol
+
+There are exactly four mandatory human checkpoints in this pipeline. This file defines
+the mechanics; `AGENTS.md` Section 5 defines what triggers each one.
+
+| Gate | After phase | What's being approved |
+|---|---|---|
+| HITL 1 | 2 — Knowledge Graph | Domain boundaries are correct |
+| HITL 2 | 3 — Scope Selection | Target module + UI architecture approach |
+| HITL 3 | 4 — Specs & Backlog | Acceptance criteria + implementation plan |
+| HITL 4 | 7 — Live Preview | Final functional sign-off before merge |
+
+## At every gate, you must:
+1. Stop all further action — do not begin the next phase's work, even preparatory work.
+2. Post a summary using this structure:
+   - **Phase completed:** [name]
+   - **What I did:** 2–5 bullets
+   - **Artifacts produced:** file paths / links
+   - **Decisions needed from you:** explicit numbered questions or options
+   - **Risks / open questions:** anything ambiguous found
+3. Wait for one of these explicit responses:
+   - `approved` / `approved with changes: ...` → proceed, applying noted changes first
+   - `rework: ...` → revise current phase's artifact, re-present, do not advance
+   - `reject` → stop the pipeline for this module, await new direction
+4. Never interpret silence, a partial reply, or an unrelated message as approval. If a
+   reply is ambiguous, ask a direct clarifying question instead of proceeding.
+
+## Escalations outside the four planned gates
+Two situations also require stopping and asking, even mid-phase:
+- **Phase 6 test failures** that persist past the 3-attempt retry budget (see
+  `skills/test-verifier/SKILL.md`).
+- **Any discovery, mid-phase, that contradicts an earlier approval** (e.g., Phase 5
+  reveals that an approved spec is infeasible) — surface it immediately rather than
+  quietly deviating from the approved plan.
