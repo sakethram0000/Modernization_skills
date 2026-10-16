@@ -1,10 +1,11 @@
 ---
 name: legacy-discovery
-description: Use at the start of any modernization engagement (Phase 1) to statically analyze a .NET Framework 4.6.1 repository — structure, config, dependencies, cross-cutting concerns — before any design or code work begins. Do not skip even if the repo "looks familiar."
+description: Use at the start of any modernization engagement (Phase 1) to statically analyze a .NET Framework 4.x repository — structure, config, controllers, views, dependencies, cross-cutting concerns — before any design or code work begins. Do not skip even if the repo "looks familiar."
+disable-model-invocation: true
 phase: 1 — Discovery & Parsing
 ---
 
-# Legacy Discovery (.NET Framework 4.6.1)
+# Legacy Discovery (.NET Framework 4.x)
 
 ## When to use
 Every modernization engagement starts here. Run this skill before `akg-builder`. Re-run
@@ -15,33 +16,39 @@ the relevant parts if scope later expands to a module you haven't yet analyzed.
 - No write access is required or permitted for this skill — discovery is strictly read-only.
 
 ## Process
-1. **Map the project structure.** Identify `.csproj`/`.sln` files, distinguish WebForms
+1. **Run the inventory script first.** From the skill repo (or the copy inside the legacy repo):
+   `powershell -File agent-config/scripts/inventory.ps1 -RepoRoot <legacy repo>`.
+   Record each `TargetFrameworkVersion` (`v4.5` through `v4.8`). Do not assume 4.6.1.
+   If the script prints a STOP line, copy it into the report and follow `agent-config/rules/stop-list.md`.
+2. **Map the project structure.** Identify `.csproj`/`.sln` files, distinguish WebForms
    (`.aspx`/`.aspx.cs`/`.ascx`) from MVC (`Controllers/`, `Views/`) from class libraries
    and WCF/ASMX service projects.
-2. **Parse configuration.** Read every `Web.config`/`App.config`: connection strings,
+3. **Parse configuration.** Read every `Web.config`/`App.config`: connection strings,
    `appSettings`, custom `HttpModules`/`HttpHandlers`, auth mode (`<authentication mode>`),
    session state provider, binding redirects.
-3. **Parse startup/bootstrap.** Read `Global.asax.cs` — `Application_Start`,
+4. **Parse startup/bootstrap.** Read `Global.asax.cs` — `Application_Start`,
    `Application_BeginRequest`, registered routes/areas, any static/singleton state
    initialized here (common source of hidden coupling).
-4. **Inventory data access.** Find EF6 `DbContext`/`.edmx` models, raw ADO.NET, or
+5. **Inventory data access.** Find EF6 `DbContext`/`.edmx` models, raw ADO.NET, or
    Dapper usage. List every stored procedure or raw SQL string invoked from code —
    these often hide business logic.
-5. **Inventory services.** List WCF service contracts (`[ServiceContract]`) or ASMX
+6. **Inventory services.** List WCF service contracts (`[ServiceContract]`) or ASMX
    `.asmx` endpoints, their operations, and consumers.
-6. **Build a call graph.** For each entry point (page, controller action, service
+7. **Build a call graph.** For each entry point (page, controller action, service
    operation), trace the call chain down to data access. Note fan-out/fan-in — components
    called from many places are higher-risk to modernize in isolation.
-7. **Flag cross-cutting concerns explicitly:** any use of `HttpContext.Current`,
+8. **Flag cross-cutting concerns explicitly:** any use of `HttpContext.Current`,
    `Session[...]`, `Cache`, static mutable state, `Thread`/`Timer` background work,
    Windows-only APIs (registry, file shares, COM interop) — these need explicit handling
    in the target architecture and cannot be ported 1:1.
-8. **Note anything undocumented or suspicious**, e.g., commented-out logic left active,
+9. **Note anything undocumented or suspicious**, e.g., commented-out logic left active,
    duplicated business rules in more than one layer, or config values that look
    environment-specific but are hardcoded.
 
 ## Output artifact
-`discovery-report.md` containing:
+`runs/<RepoName>/modernized/discovery-report.md`. The clone is `runs/<RepoName>/legacy/` and is not edited. The report contains:
+- Detected 4.x version per project (from the script, not from memory)
+- Controller and action name list (this list feeds `parity-map.md` later)
 - Project/solution structure summary
 - Config inventory (sanitized — do not copy real connection strings/secrets verbatim)
 - Data access inventory (EF6 models, raw SQL/stored procs referenced)

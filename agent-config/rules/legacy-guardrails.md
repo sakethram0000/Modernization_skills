@@ -2,7 +2,7 @@
 
 These rules apply across every phase and every skill in this engagement.
 
-1. **Never modify the legacy .NET Framework 4.6.1 source in place.** All modernized code
+1. **Never modify the legacy .NET Framework 4.x source in place.** All modernized code
    lives in a new project/solution or a clearly separated `/modernized` path. The legacy
    app remains the behavioral reference until the module is signed off and merged.
 2. **Never write to a production or shared legacy database.** Discovery is read-only.

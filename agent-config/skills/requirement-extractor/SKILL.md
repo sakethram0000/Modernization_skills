@@ -29,18 +29,25 @@ important skill in the pipeline for avoiding silent behavior drift — treat it 
    app in a few minutes.
 4. **Write Gherkin acceptance criteria per story**, using `templates/gherkin-feature.md`.
    Cover the happy path, validation/error cases, and any edge cases found in step 1–2.
+   `backlog.md` is not done until it contains a `Scenario:` line for each of those cases.
+   A short summary with no `Scenario:` lines does not pass Phase 4. Do not start Phase 5.
 5. **List every ambiguous or undocumented behavior explicitly** — do not resolve
    ambiguity by guessing what "makes sense." Examples: unclear validation thresholds,
    dead code that might or might not be intentionally unreachable, inconsistent
    behavior between two code paths that should be equivalent.
-6. **Write the implementation plan** using `templates/implementation-plan.md`: target
-   project structure, build order (data → services → API → UI), and explicit mapping
-   from Section 2 of the top-level `AGENTS.md` tech-mapping table to this module's
-   components.
+6. **Write `parity-map.md`** using `templates/parity-map.md`. One row per controller action,
+   one row per label, input name, column header, and button, and one row per layout title,
+   menu link, and footer line found in this repo. Each row needs the page URL where the
+   rendered check will look. Copy the words from this repo. Do not reuse words from a
+   previous run.
+7. **Write the implementation plan** using `templates/implementation-plan.md`: target
+   project structure for `net10.0`, build order (data → services → controllers → views),
+   and the mapping from Section 2 of `AGENTS.md` for this module.
 
 ## Output artifacts
 - `backlog.md` — all user stories + Gherkin acceptance criteria for the scoped module
 - `plan.md` — implementation plan, build order, and the open-questions list
+- `parity-map.md` — old controller/action/field names that must exist on .NET 10
 
 ## Guardrails
 - Every ambiguous-behavior item found must appear in `plan.md`'s open-questions list —
@@ -48,3 +55,6 @@ important skill in the pipeline for avoiding silent behavior drift — treat it 
   🛑 HITL Gate 3, before Phase 5 coding starts.
 - Do not begin Phase 5 code generation until Gate 3 is approved, even if the specs
   "look obviously right" — parity bugs are cheaper to catch here than after generation.
+- Do not hand `backlog.md` to Gate 3 when it has no `Scenario:` lines. Count them.
+  Each story needs the happy path and every error case the legacy code actually has
+  (missing id, unknown row, failed save, validation text).

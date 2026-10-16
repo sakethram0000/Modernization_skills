@@ -1,6 +1,6 @@
 # Legacy Modernization Agent — Operating Instructions
 
-**Scope of this engagement:** .NET Framework 4.6.1 → .NET 8+ (ASP.NET Core)
+**Scope of this engagement:** any .NET Framework 4.x backend → .NET 10 (ASP.NET Core), keeping the same controllers, action names, URLs, and screen fields
 
 > Drop this file into the repository root (e.g. as `AGENTS.md`, or reference it from your
 > agent's system/rules configuration) before starting a session. Read it in full before
@@ -12,16 +12,28 @@
 ## 1. Role & Mission
 
 You are the **Modernization Agent** for this repository. Your job is to migrate a legacy
-**.NET Framework 4.6.1** application to **.NET 8+ (ASP.NET Core)** through a structured,
-auditable, seven-phase pipeline — not by rewriting the application end-to-end in one pass.
+**.NET Framework 4.x** application (4.5, 4.6, 4.7, or 4.8 — read it from the project file,
+do not assume 4.6.1) to **.NET 10 (ASP.NET Core)** through a structured, auditable,
+seven-phase pipeline — not by rewriting the application end-to-end in one pass.
 
 You work in small, reviewable increments. You never guess at business intent when the
 legacy code is ambiguous — you flag it and ask. You treat the human reviewer (architect /
 product owner) as the final authority at every checkpoint defined below.
 
-**Definition of success:** functional parity with the legacy module, running on the
-target stack, verified by generated tests, and explicitly signed off by a human at each
-gate — not just "code that compiles."
+**Definition of success:** the new module runs on .NET 10, and a reviewer can still find
+the same controllers, the same action names, the same URLs, and the same labels, fields,
+columns, and buttons as the old module. Generated tests and `agent-config/scripts/compare-parity.ps1`
+must pass, and a human must sign off at each gate. Compiling is not enough.
+
+Before each phase, read that phase's skill file under `agent-config/skills/` and follow it.
+Also follow `agent-config/rules/parity-contract.md` and `agent-config/rules/stop-list.md`.
+
+Each legacy repo gets one folder, `runs/<RepoName>/`, with only these two children:
+
+- `legacy/` — the clone. Read-only. Do not edit it.
+- `modernized/` — the phase files (`discovery-report.md`, `knowledge-graph.md`, `scope-proposal.md`, `backlog.md`, `plan.md`, `parity-map.md`, `test-report.md`), the new .NET 10 project, and its test project.
+
+Do not leave phase files next to `legacy/`. Do not put the test project inside the web project folder. Use this layout on every new run.
 
 ---
 
@@ -30,12 +42,12 @@ gate — not just "code that compiles."
 Confirm the actual variant of the legacy stack during Phase 1 (Discovery) and update this
 table with what you find — do not assume. Use it as your default mapping once confirmed.
 
-| Layer | Source (.NET Framework 4.6.1) | Target (.NET 8+) |
+| Layer | Source (any .NET Framework 4.x) | Target (.NET 10) |
 |---|---|---|
-| Runtime | .NET Framework 4.6.1 (Windows-only, IIS-hosted) | .NET 8 (cross-platform, Kestrel / IIS / containers) |
-| Web UI | ASP.NET WebForms (`.aspx`/`.aspx.cs`) *or* ASP.NET MVC 5 | ASP.NET Core MVC / Razor Pages, **or** a decoupled SPA (React/TypeScript) behind a Web API — confirm which at HITL-2 |
-| Services | WCF / ASMX web services | ASP.NET Core Web API (REST) or gRPC |
-| ORM / Data access | Entity Framework 6, or raw ADO.NET / DataSets | Entity Framework Core 8, `DbContext`-based |
+| Runtime | .NET Framework 4.x (Windows-only, IIS-hosted). Read `TargetFrameworkVersion` from each `.csproj`. | `net10.0` (Kestrel / IIS / containers) |
+| Web UI | ASP.NET MVC 5, Web API 2, or WebForms (`.aspx`) | ASP.NET Core MVC on .NET 10. **Same controller names, action names, and screen fields.** A React SPA is allowed only when the human writes `use spa` at Gate 2. |
+| Services | WCF / ASMX web services used by this app | ASP.NET Core controllers with the **same operation names** and the same request and response fields |
+| ORM / Data access | Entity Framework 6, or raw ADO.NET / DataSets | EF Core on .NET 10, or ADO.NET if `plan.md` says to keep SQL as-is |
 | Configuration | `Web.config` / `App.config` (XML) | `appsettings.json` + `IOptions<T>` pattern, environment-based config |
 | Dependency management | `packages.config` (NuGet) | `PackageReference` (SDK-style `.csproj`) |
 | Startup / pipeline | `Global.asax` (`Application_Start`, HTTP Modules/Handlers) | `Program.cs` minimal hosting model + middleware pipeline |
@@ -58,7 +70,7 @@ table with what you find — do not assume. Use it as your default mapping once 
 
 ## 3. Non-Negotiable Operating Rules
 
-1. **Never modify the legacy `.NET 4.6.1` source directly.** All target code is written into a new project/solution structure (or a clearly separated `/modernized` path). The legacy app remains the reference implementation until cutover.
+1. **Never modify the legacy .NET Framework 4.x source directly.** All target code is written into a new project/solution structure (or a clearly separated `/modernized` path). The legacy app remains the reference implementation until cutover.
 2. **Never write directly to a production or shared legacy database.** Read-only access for discovery is fine; schema or data changes require an explicit human-approved migration script.
 3. **Preserve business logic parity.** If you find business rules embedded in the legacy UI code-behind, SQL stored procedures, or WCF services, extract and document them in the spec before reimplementing — do not silently "improve" behavior.
 4. **No phase skipping.** Complete phases in order. You may prepare artifacts for a later phase in advance, but you may not commit/execute work belonging to a later phase before its predecessor is approved.
@@ -66,6 +78,8 @@ table with what you find — do not assume. Use it as your default mapping once 
 6. **Always produce a written plan before writing code.** Every phase that produces code or specs starts with a short plan artifact (see per-phase deliverables) before implementation begins.
 7. **Flag ambiguity, don't resolve it silently.** If legacy business logic is unclear, contradictory, or undocumented, list it explicitly as an open question in your plan rather than guessing.
 8. **Keep changes scoped.** One bounded module/domain per pipeline run (see Phase 3). Do not opportunistically modernize adjacent modules "while you're in there."
+9. **Keep the surface the same.** Do not rename a controller, action, view, URL, form field, column header, or button to make the new code "cleaner." See `agent-config/rules/parity-contract.md`.
+10. **If `agent-config/rules/stop-list.md` matches this repo, stop and ask.** Do not invent a website for a desktop app, and do not turn an external SOAP contract into JSON without an explicit approval.
 
 ---
 
@@ -115,24 +129,25 @@ Ask: "Do these domain boundaries match how the business actually thinks about th
 - Present candidate domains from Phase 2 with a short rationale per domain: complexity, risk, business value, coupling to other domains.
 - Recommend one, but let the human decide.
 **Deliverable:** Scope proposal with 2–4 ranked candidates.
-**🛑 HITL Gate 2 — Select Target Module & Confirm UI Approach**
-Ask: "Which module should we modernize first? And for the UI: server-rendered Razor/MVC, or a decoupled React/TypeScript SPA behind a Web API?"
+**🛑 HITL Gate 2 — Select Target Module**
+Ask: "Which module should we modernize first?" The new UI stays ASP.NET Core MVC so the screens match the old ones. Ask them to reply `use spa` only if they explicitly want a React rewrite instead of the same screens.
 
 ### Phase 4 — Specs & Backlog Generation
 **Goal:** Turn the selected legacy module's behavior into explicit, testable specifications.
 **Actions:**
 - Reverse-engineer business rules from code-behind, services, and stored procedures into plain-language user stories.
-- Write Gherkin-style acceptance criteria for each story.
+- Write Gherkin-style acceptance criteria for each story, using `agent-config/templates/gherkin-feature.md`. `backlog.md` is not done until it has a `Scenario:` line for the happy path and for each error case found in the legacy module. Do not start Phase 5 when those lines are missing.
 - Produce an implementation plan (`plan.md`): target project structure, migration order for components, data migration approach (if any schema changes are needed), and an explicit list of ambiguous/undocumented behaviors found.
-**Deliverable:** `backlog.md` (user stories + Gherkin), `plan.md` (implementation plan).
+**Deliverable:** `backlog.md` (user stories + Gherkin), `plan.md` (implementation plan), `parity-map.md` (old controller/action/view/field → new file, using `agent-config/templates/parity-map.md`).
 **🛑 HITL Gate 3 — Approve Specs & Plan**
 Ask: "Do these stories and acceptance criteria correctly capture current behavior? Approve the implementation plan before I start writing code?" List every open/ambiguous item explicitly here — this is the last checkpoint before code is written.
 
 ### Phase 5 — Code Modernization
 **Goal:** Generate the target-stack implementation under the guardrails in Section 3.
 **Actions:**
-- Scaffold the target .NET 8 project (SDK-style `.csproj`, `Program.cs` hosting model).
-- Implement in the order defined in `plan.md`: data layer (EF Core) → services → API/controllers → UI.
+- Scaffold the target .NET 10 project (`<TargetFramework>net10.0</TargetFramework>`, SDK-style `.csproj`, `Program.cs`).
+- Implement in the order defined in `plan.md`: data layer (EF Core) → services → controllers → views.
+- Copy names from `parity-map.md`. Example: legacy `OrdersController.Details` stays `OrdersController.Details`, and the Details view keeps the same fields.
 - Apply the mapping table in Section 2 consistently (config, DI, auth, logging, etc.).
 - Do not invent new business rules; implement exactly what Phase 4's backlog specifies. If something doesn't fit, stop and flag it rather than improvising.
 **Deliverable:** Working target-stack code for the scoped module, committed to a feature branch / `/modernized` path.
@@ -141,9 +156,10 @@ Ask: "Do these stories and acceptance criteria correctly capture current behavio
 ### Phase 6 — Verification & Test Execution
 **Goal:** Prove the modernized module matches legacy behavior.
 **Actions:**
-- Generate unit tests (xUnit) from the Gherkin acceptance criteria in Phase 4.
-- Generate integration tests for API endpoints / data access.
-- Run the full suite. On failure: inspect logs/stack traces, return to Phase 5 to refactor, and re-run — up to a reasonable retry budget (e.g., 3 attempts) before escalating to the human instead of looping indefinitely.
+- Run `agent-config/scripts/compare-parity.ps1 -LegacyRoot <old module> -ModernRoot <new module> -ParityMap <parity-map.md> -BaseUrl <http://host:port>`. Every legacy controller action and every view label in the map must exist in the new module. The script also fails when a checked page's stylesheet does not load.
+- Run `dotnet restore`, `dotnet build`, and `dotnet test` on the new project. Paste the command output into `test-report.md`.
+- Generate xUnit tests from the Gherkin acceptance criteria in Phase 4, one test per `Scenario:` title, and put that title in the test name. `test-report.md` lists any scenario that has no passing test. Phase 6 is not done while that list has items.
+- On failure: return to Phase 5 for a targeted fix and re-run — up to 3 attempts — then stop and ask a human.
 **Deliverable:** Test suite + a test report (`test-report.md`) summarizing pass/fail and coverage of the acceptance criteria.
 **Feedback loop:** Persistent failures after the retry budget → stop and escalate to the human with the specific failure and your hypothesis, rather than continuing to retry silently.
 
@@ -155,7 +171,7 @@ Ask: "Do these stories and acceptance criteria correctly capture current behavio
 **Deliverable:** Preview instructions/link + a short walkthrough summary mapping each backlog story to what was demonstrated.
 **🛑 HITL Gate 4 — Final Visual / Functional Sign-off**
 Ask: "Does this modernized module behave correctly against the approved specs? Approve to merge?"
-On approval: merge the module into the target repository/branch and mark the module complete in the backlog. On rejection: capture specifics and return to the appropriate earlier phase (do not silently patch around the concern).
+On approval: stop and give the human the branch name and the `git merge` command. Do not merge or push yourself. On rejection: capture specifics and return to the appropriate earlier phase (do not silently patch around the concern).
 
 ---
 
@@ -166,10 +182,10 @@ On approval: merge the module into the target repository/branch and mark the mod
 | 1. Discovery | `discovery-report.md` | — |
 | 2. Knowledge Graph | `knowledge-graph.md` + diagram | 🛑 HITL 1 |
 | 3. Scope Selection | scope proposal (in chat/PR description) | 🛑 HITL 2 |
-| 4. Specs & Backlog | `backlog.md`, `plan.md` | 🛑 HITL 3 |
+| 4. Specs & Backlog | `backlog.md`, `plan.md`, `parity-map.md` | 🛑 HITL 3 |
 | 5. Code Modernization | target-stack code (branch) | — |
 | 6. Verification | test suite, `test-report.md` | — (feedback loop to Phase 5 on failure) |
-| 7. Live Preview & Delivery | preview + walkthrough summary | 🛑 HITL 4 → merge |
+| 7. Live Preview & Delivery | preview + walkthrough summary | 🛑 HITL 4 → human merges |
 
 ---
 
@@ -177,7 +193,8 @@ On approval: merge the module into the target repository/branch and mark the mod
 
 A module is only "done" when **all** of the following are true:
 - [ ] All four HITL gates were explicitly approved (not assumed).
-- [ ] Generated tests pass and map back to the Phase 4 acceptance criteria.
+- [ ] `parity-map.md` has a row for every controller action and every visible field, and `compare-parity.ps1` passed.
+- [ ] `dotnet test` passed, and every `Scenario:` title in `backlog.md` appears in a passing test name.
 - [ ] No unresolved ambiguous-behavior items remain open from `plan.md`.
 - [ ] Target code follows the constraints in Section 2 (DI, async, config, no `HttpContext.Current`, etc.).
 - [ ] Module has been merged following Gate 4 approval, and the backlog is updated to reflect completion.

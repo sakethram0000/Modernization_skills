@@ -1,6 +1,7 @@
 ---
 name: test-verifier
-description: Use in Phase 6 to generate and run xUnit unit/integration tests derived from the Gherkin acceptance criteria in backlog.md, verifying the Phase 5 output actually matches specified behavior. On failure, routes back to target-modernizer within a bounded retry budget.
+description: Use in Phase 6 to run compare-parity.ps1 and dotnet test, then generate xUnit tests from the Gherkin in backlog.md. On failure, routes back to target-modernizer within a bounded retry budget.
+disable-model-invocation: true
 phase: 6 — Verification & Test Execution
 retry_budget: 3 attempts before escalating to human
 ---
@@ -18,12 +19,18 @@ looping back to `target-modernizer`.
 - Phase 5 implementation code
 
 ## Process
-1. **Generate unit tests** (xUnit + FluentAssertions/Moq) for business logic and service
-   layers, one test (or test group) per Gherkin scenario in `backlog.md`.
-2. **Generate integration tests** for API endpoints/data access — covering the happy
-   path and the validation/error cases captured in Phase 4.
-3. **Run the full suite.**
-4. **On any failure:**
+1. **Run the rendered parity check** and stop if it exits non-zero. The new app must already be running.
+   `powershell -File agent-config/scripts/compare-parity.ps1 -LegacyRoot <old module> -ModernRoot <new module> -ParityMap <parity-map.md> -BaseUrl <http://host:port>`.
+   The script checks controller action names, then fetches each Page URL and looks for that row's visible text in the HTML. It also requests every stylesheet linked from those pages. If the legacy layout styles the screen, a page with no stylesheet link fails, and a link that is not HTTP 200 with a non-empty body fails. A missing menu title, link, label, button, or stylesheet is a Phase 5 bug. Do not pass the check by comparing Razor source.
+2. **Run** `dotnet restore`, `dotnet build`, and `dotnet test` on the new .NET 10 project. Paste the output into `test-report.md`.
+3. **Generate one test per Gherkin scenario** in `backlog.md`. The test name must
+   contain the `Scenario:` title. If `backlog.md` has no `Scenario:` lines, stop and
+   return to Phase 4. Do not close Phase 6 with a shorter test list than the scenario list.
+4. **Generate integration tests** for API endpoints/data access — covering the happy
+   path and the validation/error cases captured in Phase 4. Those scenarios need their
+   own tests too, with the scenario title in the test name.
+5. **Re-run** `dotnet test` after the new tests exist.
+6. **On any failure:**
    a. Inspect the failure (stack trace, assertion diff) and form a specific hypothesis
       about the cause.
    b. Hand the specific failure + hypothesis back to `target-modernizer` for a targeted
@@ -32,8 +39,9 @@ looping back to `target-modernizer`.
    d. If still failing after 3 attempts, **stop** and escalate to the human with: the
       specific failing scenario(s), what you tried, and your best hypothesis for why it's
       still failing. Do not keep looping silently.
-5. **On success**, compute simple coverage against the acceptance criteria: which
-   Gherkin scenarios have a passing test, and flag any that don't have test coverage yet.
+7. **On success**, list every `Scenario:` title in `test-report.md` next to the test
+   that covers it. The phase fails while any title has no passing test. Do not mark
+   the module done from a passing `dotnet test` alone.
 
 ## Output artifact
 - Test suite (checked into the same branch as the Phase 5 code)

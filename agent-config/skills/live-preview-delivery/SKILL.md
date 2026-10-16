@@ -24,12 +24,13 @@ its job is to let a human *see* the module working, not just trust the test repo
 3. **Capture the walkthrough** as a short summary mapping each story to what was
    demonstrated (screenshot references, recorded steps, or a narrated sequence,
    depending on what the environment supports).
-4. **Prepare the Gate 4 sign-off request** per the standard approval protocol in
+4. **State the data source** in the walkthrough as either `Data source: <connection name>` or `Data source: preview data is fake`.
+5. **Prepare the Gate 4 sign-off request** per the standard approval protocol in
    `AGENTS.md` Section 4: what was built, the preview access instructions, the
    walkthrough summary, and any remaining known gaps carried over from `plan.md`'s
    open-questions list.
-5. **On approval:** merge the modernized module into the target repository/branch and
-   update the backlog to mark the module complete.
+6. **On approval:** do not merge and do not push. Tell the human the branch name and the
+   exact `git merge` command, and update the backlog text to say the module is ready to merge.
    **On rejection:** capture the specific concern and route back to the appropriate
    earlier phase (spec issue → Phase 4, implementation issue → Phase 5) rather than
    patching around it in this phase.
@@ -40,8 +41,7 @@ its job is to let a human *see* the module working, not just trust the test repo
 - The Gate 4 sign-off request itself
 
 ## Guardrails
-- Do not merge without an explicit Gate 4 approval message, per the approval protocol —
-  a clean test report is necessary but not sufficient for merge.
+- Do not merge or push. Gate 4 approval means the human may merge. A clean test report is necessary but not sufficient.
 - If a known gap was accepted earlier (e.g., an ambiguous behavior explicitly waved
   through at Gate 3), restate it here rather than letting it silently disappear from
   view.

@@ -1,11 +1,12 @@
 ---
 name: target-modernizer
-description: Use in Phase 5 to generate .NET 8+ (ASP.NET Core) implementation code for the module specified in the approved backlog.md and plan.md, applying the standard .NET Framework 4.6.1 -> .NET 8 mapping rules and architecture constraints.
+description: Use in Phase 5 to generate .NET 10 (ASP.NET Core) implementation code for the module specified in the approved backlog.md, plan.md, and parity-map.md. Keep controller names, action names, URLs, and screen fields the same as the .NET Framework 4.x module.
+disable-model-invocation: true
 phase: 5 — Code Modernization
 requires_approval: backlog.md and plan.md must be approved at HITL Gate 3 before this skill runs
 ---
 
-# Target Modernizer (.NET Framework 4.6.1 → .NET 8+)
+# Target Modernizer (.NET Framework 4.x → .NET 10)
 
 ## When to use
 Only after `backlog.md` and `plan.md` are approved at HITL Gate 3. This skill implements
@@ -14,12 +15,18 @@ exactly what those documents specify — it is not a place to make new design de
 ## Inputs
 - Approved `backlog.md` (user stories + Gherkin acceptance criteria)
 - Approved `plan.md` (build order, project structure)
-- `rules/target-architecture.md` (non-negotiable target constraints)
+- Approved `parity-map.md` (controller, action, URL, and screen-field names)
+- `rules/target-architecture.md` and `rules/parity-contract.md`
 
 ## Process
-1. **Scaffold the target project** per `plan.md`: SDK-style `.csproj`, `Program.cs`
-   minimal hosting model, `appsettings.json`/`appsettings.Development.json`.
-2. **Implement in the plan's stated order** — typically:
+1. **Scaffold the target project** per `plan.md`: SDK-style `.csproj` with
+   `<TargetFramework>net10.0</TargetFramework>`, `Program.cs` minimal hosting model,
+   `appsettings.json` / `appsettings.Development.json`.
+2. **Copy names from `parity-map.md`.** Create `OrdersController` only if the map says
+   `OrdersController`. Create action `Details` only if the map lists `Details`.
+   Put the same labels, input names, column headers, and button text on the new view.
+   Do this before any "cleanup" rename.
+3. **Implement in the plan's stated order** — typically:
    a. **Data layer** — EF Core `DbContext` + entity classes, mapped from EF6
       models/`.edmx` or from raw SQL/stored-procedure logic identified in discovery.
       Preserve column/table names unless the plan explicitly calls for a rename.
@@ -27,26 +34,29 @@ exactly what those documents specify — it is not a place to make new design de
       including logic that was previously embedded in stored procedures or WCF
       services. Make it unit-testable (no static state, constructor-injected
       dependencies).
-   c. **API/controller layer** — ASP.NET Core Web API controllers or Razor Pages,
-      per the UI approach confirmed at HITL Gate 2.
-   d. **UI layer** — React/TypeScript components (if SPA was chosen) or Razor
-      views (if server-rendered was chosen), matching the legacy UI's actual behavior,
-      not its literal markup.
-3. **Apply the standard mapping** from `AGENTS.md` Section 2 consistently: DI via
+   c. **Controller layer** — the same controller class names and action names as `parity-map.md`.
+   d. **View layer** — Razor views that show the same headings, labels, input names,
+      column headers, and button text as the old view. Use React only if Gate 2 was
+      answered with `use spa`.
+4. **Apply the standard mapping** from `AGENTS.md` Section 2 consistently: DI via
    `Microsoft.Extensions.DependencyInjection`, config via `IOptions<T>`, logging via
    `Microsoft.Extensions.Logging`, no `HttpContext.Current`, async I/O throughout.
-4. **Do not add scope.** If you notice a related improvement outside what `backlog.md`
+5. **Do not add scope.** If you notice a related improvement outside what `backlog.md`
    specifies, note it as a suggestion in your Phase 5 summary — do not implement it
    without it going through Phase 4 first.
-5. **Self-review against `rules/target-architecture.md`** before handing off to
+6. **Render every shared-chrome row** in the new layout. The module view alone is not enough.
+7. **State the data source** in the phase summary. Use the legacy database only as a read-only connection when one is available. If you seed rows so the page can open, write `Data source: preview data is fake` and list those rows. Do not describe seeded rows as the legacy database.
+8. **Self-review against `rules/target-architecture.md` and `rules/parity-contract.md`** before handing off to
    `test-verifier` — check DI usage, async usage, and config usage are compliant.
 
 ## Output artifact
-Target-stack source code for the scoped module, committed to a feature branch or a
-clearly separated `/modernized` path (never overwriting legacy source in place).
+Target-stack source code under `runs/<RepoName>/modernized/`, next to the phase files.
+The test project is a sibling of the web project, still inside `modernized/`. Never
+write into `legacy/`.
 
 ## Guardrails
-- Never modify legacy `.NET Framework 4.6.1` source files.
+- Never modify legacy .NET Framework 4.x source files.
+- Never rename a controller, action, URL, or view field that `parity-map.md` lists.
 - Never introduce a new NuGet dependency that isn't implied by `plan.md` without
   flagging it in your phase summary.
 - If something in `backlog.md` turns out to be infeasible or contradictory once you're
