@@ -30,11 +30,14 @@ quickly and with full information at HITL Gate 2.
    A SPA is a redesign, and it breaks the parity contract unless they accept that.
 5. **Recommend one** as a default, but make clear it's a recommendation, not a
    pre-decision.
+6. **Write two lists before the gate.** Dependencies: the shared data, APIs, and auth rules this module uses or that other modules use from it. Exclusions: every domain, controller, and behavior that this run will not modernize. Gate 2 is not ready until both lists are in the proposal.
 
 ## Output artifact
 Scope proposal (short, presented directly in the HITL Gate 2 message — no separate file
 required unless the team prefers one):
 - Ranked shortlist (2–4 domains) with rationale and blast-radius notes per domain
+- Dependencies for the recommended module
+- Explicit exclusions for this run
 - UI-architecture trade-off summary with a recommendation
 
 ## Guardrails

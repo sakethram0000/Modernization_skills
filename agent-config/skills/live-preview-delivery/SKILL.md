@@ -24,13 +24,10 @@ its job is to let a human *see* the module working, not just trust the test repo
 3. **Capture the walkthrough** as a short summary mapping each story to what was
    demonstrated (screenshot references, recorded steps, or a narrated sequence,
    depending on what the environment supports).
-4. **State the data source** in the walkthrough as either `Data source: <connection name>` or `Data source: preview data is fake`.
-5. **Prepare the Gate 4 sign-off request** per the standard approval protocol in
-   `AGENTS.md` Section 4: what was built, the preview access instructions, the
-   walkthrough summary, and any remaining known gaps carried over from `plan.md`'s
-   open-questions list.
-6. **On approval:** do not merge and do not push. Tell the human the branch name and the
-   exact `git merge` command, and update the backlog text to say the module is ready to merge.
+4. **State the data source** in the walkthrough. A real database uses `Data source: <connection name>`. A prototype uses both `Classification: prototype` and `Data source: preview data is fake`, plus the seeded rows.
+5. **Prepare the Gate 4 sign-off request** per `rules/hitl-checkpoints.md`. Repeat every gap accepted at Gate 3. If authentication, real persistence, or an in-scope API has no passing test, stop and say the run cannot be accepted as finished. A prototype can be accepted only with the sentence `Classification: prototype`.
+6. **On approval of a finished module:** do not merge and do not push. Tell the human the branch name and the
+   exact `git merge` command, and update the backlog text to say the module is ready to merge. On approval of a prototype, update the backlog to say `Classification: prototype` and do not say it is ready to merge as the finished system.
    **On rejection:** capture the specific concern and route back to the appropriate
    earlier phase (spec issue → Phase 4, implementation issue → Phase 5) rather than
    patching around it in this phase.
@@ -41,7 +38,6 @@ its job is to let a human *see* the module working, not just trust the test repo
 - The Gate 4 sign-off request itself
 
 ## Guardrails
-- Do not merge or push. Gate 4 approval means the human may merge. A clean test report is necessary but not sufficient.
-- If a known gap was accepted earlier (e.g., an ambiguous behavior explicitly waved
-  through at Gate 3), restate it here rather than letting it silently disappear from
-  view.
+- Do not merge or push. Gate 4 approval of a finished module means the human may merge. A clean test report is necessary but not sufficient.
+- If a known gap was accepted earlier, restate it here. Do not accept the run as finished while an in-scope authentication rule, real database write, or API still has no passing test.
+- A prototype preview stays labeled `Classification: prototype`.

@@ -26,9 +26,11 @@ looping back to `target-modernizer`.
 3. **Generate one test per Gherkin scenario** in `backlog.md`. The test name must
    contain the `Scenario:` title. If `backlog.md` has no `Scenario:` lines, stop and
    return to Phase 4. Do not close Phase 6 with a shorter test list than the scenario list.
-4. **Generate integration tests** for API endpoints/data access — covering the happy
-   path and the validation/error cases captured in Phase 4. Those scenarios need their
-   own tests too, with the scenario title in the test name.
+4. **Generate integration tests** for API endpoints and data access. The screen script does not do this.
+   - For every in-scope API scenario, call the endpoint and assert the status code and the response body.
+   - For every validation scenario, submit that invalid case and assert the legacy message.
+   - If the approved scope includes authorization, one test must show that an anonymous or wrong-role call is rejected the way the legacy module rejects it. If Gate 3 accepted auth as out of scope, say that in `test-report.md` and do not invent a passing login test.
+   - If `plan.md` does not say `Classification: prototype`, one test must show a saved row is still there on a later request. A prototype does not need a real-database test.
 5. **Re-run** `dotnet test` after the new tests exist.
 6. **On any failure:**
    a. Inspect the failure (stack trace, assertion diff) and form a specific hypothesis
@@ -40,8 +42,8 @@ looping back to `target-modernizer`.
       specific failing scenario(s), what you tried, and your best hypothesis for why it's
       still failing. Do not keep looping silently.
 7. **On success**, list every `Scenario:` title in `test-report.md` next to the test
-   that covers it. The phase fails while any title has no passing test. Do not mark
-   the module done from a passing `dotnet test` alone.
+   that covers it. Also say whether authorization and real persistence were required or out of scope. The phase fails while any in-scope title has no passing test. Do not mark
+   the module done from a passing `dotnet test` or a passing screen check alone.
 
 ## Output artifact
 - Test suite (checked into the same branch as the Phase 5 code)

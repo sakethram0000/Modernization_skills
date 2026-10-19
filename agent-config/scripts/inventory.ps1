@@ -43,9 +43,37 @@ Write-Output ("asmx={0}" -f @(Get-ChildItem -Path $RepoRoot -Recurse -Filter *.a
 Write-Output ("edmx={0}" -f @(Get-ChildItem -Path $RepoRoot -Recurse -Filter *.edmx -File -ErrorAction SilentlyContinue).Count)
 
 Write-Output "=== Controllers ==="
+$skipMethods = @("Dispose", "ToString", "Equals", "GetHashCode")
 foreach ($controller in $controllers) {
     $text = Get-Content -Path $controller.FullName -Raw
-    $actions = [regex]::Matches($text, 'public\s+(?:async\s+)?(?:Task\s*<\s*)?(?:IActionResult|ActionResult|ViewResult|JsonResult)\s*>?\s+(\w+)\s*\(')
-    $names = @($actions | ForEach-Object { $_.Groups[1].Value })
-    Write-Output ("{0} | actions={1}" -f $controller.Name, ($names -join ","))
+    $actions = [regex]::Matches($text, '(?m)^\s*public\s+(?:async\s+)?(?:override\s+)?(?:virtual\s+)?(?!void\b)[A-Za-z0-9_<>,\.\[\]\?]+\s+(\w+)\s*\(')
+    $names = @($actions | ForEach-Object { $_.Groups[1].Value } | Where-Object { $skipMethods -notcontains $_ } | Select-Object -Unique)
+    $relative = $controller.FullName.Substring($RepoRoot.Length).TrimStart('\', '/')
+    Write-Output ("{0} | actions={1}" -f $relative, ($names -join ","))
+}
+
+Write-Output "=== Dependencies ==="
+$packages = @()
+Get-ChildItem -Path $RepoRoot -Recurse -Filter packages.config -File -ErrorAction SilentlyContinue |
+    Where-Object { $_.FullName -notmatch '\\(bin|obj)\\' } |
+    ForEach-Object {
+        $pkgText = Get-Content -Path $_.FullName -Raw
+        foreach ($match in [regex]::Matches($pkgText, '<package\s+id="([^"]+)"\s+version="([^"]+)"')) {
+            $packages += ("{0} | {1}" -f $match.Groups[1].Value, $match.Groups[2].Value)
+        }
+    }
+foreach ($project in $csproj) {
+    $text = Get-Content -Path $project.FullName -Raw
+    foreach ($match in [regex]::Matches($text, '<PackageReference\s+Include="([^"]+)"(?:\s+Version="([^"]+)")?')) {
+        $version = $match.Groups[2].Value
+        if (-not $version) { $version = "unspecified" }
+        $packages += ("{0} | {1}" -f $match.Groups[1].Value, $version)
+    }
+}
+$packages = @($packages | Select-Object -Unique)
+if ($packages.Count -eq 0) {
+    Write-Output "none"
+}
+else {
+    $packages | ForEach-Object { Write-Output $_ }
 }

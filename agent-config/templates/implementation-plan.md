@@ -25,6 +25,9 @@ Produced by `requirement-extractor` in Phase 4; approved at HITL Gate 3; followe
 ## Technology mapping applied
 [Reference `AGENTS.md` Section 2 — note any module-specific deviations and why]
 
+## Persistence
+Name the real database the new module will use, or write `Classification: prototype` and list every fake row. Do not leave this blank.
+
 ## Data migration notes
 [Any schema changes required, and how they will be handled — must be human-approved
 separately per `rules/legacy-guardrails.md`; write "none required" if not applicable]

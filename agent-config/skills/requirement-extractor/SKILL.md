@@ -42,7 +42,7 @@ important skill in the pipeline for avoiding silent behavior drift — treat it 
    previous run.
 7. **Write the implementation plan** using `templates/implementation-plan.md`: target
    project structure for `net10.0`, build order (data → services → controllers → views),
-   and the mapping from Section 2 of `AGENTS.md` for this module.
+   the mapping from Section 2 of `AGENTS.md` for this module, and a Persistence section that either names the real database or says `Classification: prototype` and lists every fake row.
 
 ## Output artifacts
 - `backlog.md` — all user stories + Gherkin acceptance criteria for the scoped module

@@ -25,6 +25,18 @@ the mechanics; `AGENTS.md` Section 5 defines what triggers each one.
 4. Never interpret silence, a partial reply, or an unrelated message as approval. If a
    reply is ambiguous, ask a direct clarifying question instead of proceeding.
 
+## Gate 4 cannot close a gap that is still unverified
+
+Before asking for Gate 4 approval, repeat every gap that Gate 3 accepted.
+
+Do not treat `approved` as acceptance of a finished modernization when any of these was in the approved scope and has no passing test:
+
+- authentication behavior
+- persistence in the real database
+- an API that belongs to the scoped module
+
+If `plan.md` says `Classification: prototype`, Gate 4 can accept the preview only as a prototype. The summary must say `Classification: prototype`. Do not say the module is ready to merge as the finished system.
+
 ## Escalations outside the four planned gates
 Two situations also require stopping and asking, even mid-phase:
 - **Phase 6 test failures** that persist past the 3-attempt retry budget (see

@@ -45,7 +45,7 @@ exactly what those documents specify — it is not a place to make new design de
    specifies, note it as a suggestion in your Phase 5 summary — do not implement it
    without it going through Phase 4 first.
 6. **Render every shared-chrome row** in the new layout. The module view alone is not enough.
-7. **State the data source** in the phase summary. Use the legacy database only as a read-only connection when one is available. If you seed rows so the page can open, write `Data source: preview data is fake` and list those rows. Do not describe seeded rows as the legacy database.
+7. **Follow the persistence choice in `plan.md`.** If the plan names a real database, use that database. Do not replace it with an in-memory collection. In-memory data is allowed only when the approved plan says `Classification: prototype` and lists every seeded row. The phase summary must repeat `Classification: prototype` and `Data source: preview data is fake`, and it must list those rows. Do not describe a prototype, or those rows, as the finished modernization or as the legacy database.
 8. **Self-review against `rules/target-architecture.md` and `rules/parity-contract.md`** before handing off to
    `test-verifier` — check DI usage, async usage, and config usage are compliant.
 

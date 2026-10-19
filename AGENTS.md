@@ -159,6 +159,7 @@ Ask: "Do these stories and acceptance criteria correctly capture current behavio
 - Run `agent-config/scripts/compare-parity.ps1 -LegacyRoot <old module> -ModernRoot <new module> -ParityMap <parity-map.md> -BaseUrl <http://host:port>`. Every legacy controller action and every view label in the map must exist in the new module. The script also fails when a checked page's stylesheet does not load.
 - Run `dotnet restore`, `dotnet build`, and `dotnet test` on the new project. Paste the command output into `test-report.md`.
 - Generate xUnit tests from the Gherkin acceptance criteria in Phase 4, one test per `Scenario:` title, and put that title in the test name. `test-report.md` lists any scenario that has no passing test. Phase 6 is not done while that list has items.
+- API scenarios must call the endpoint and check the response. Validation scenarios must submit the invalid case. If authorization or a real database is in the approved scope, those need a passing test too. A plan marked `Classification: prototype` does not need a real-database test, and `test-report.md` must say that.
 - On failure: return to Phase 5 for a targeted fix and re-run — up to 3 attempts — then stop and ask a human.
 **Deliverable:** Test suite + a test report (`test-report.md`) summarizing pass/fail and coverage of the acceptance criteria.
 **Feedback loop:** Persistent failures after the retry budget → stop and escalate to the human with the specific failure and your hypothesis, rather than continuing to retry silently.
@@ -170,8 +171,9 @@ Ask: "Do these stories and acceptance criteria correctly capture current behavio
 - Walk through the key user flows from the backlog against the live preview.
 **Deliverable:** Preview instructions/link + a short walkthrough summary mapping each backlog story to what was demonstrated.
 **🛑 HITL Gate 4 — Final Visual / Functional Sign-off**
-Ask: "Does this modernized module behave correctly against the approved specs? Approve to merge?"
-On approval: stop and give the human the branch name and the `git merge` command. Do not merge or push yourself. On rejection: capture specifics and return to the appropriate earlier phase (do not silently patch around the concern).
+Repeat every gap accepted at Gate 3. Ask: "Does this modernized module behave correctly against the approved specs? Approve to merge?"
+Do not treat `approved` as a finished modernization when authentication, real persistence, or an in-scope API was in scope and has no passing test. If the plan says `Classification: prototype`, acceptance is only as a prototype.
+On approval of a finished module: stop and give the human the branch name and the `git merge` command. Do not merge or push yourself. On rejection: capture specifics and return to the appropriate earlier phase (do not silently patch around the concern).
 
 ---
 
@@ -194,7 +196,7 @@ On approval: stop and give the human the branch name and the `git merge` command
 A module is only "done" when **all** of the following are true:
 - [ ] All four HITL gates were explicitly approved (not assumed).
 - [ ] `parity-map.md` has a row for every controller action and every visible field, and `compare-parity.ps1` passed.
-- [ ] `dotnet test` passed, and every `Scenario:` title in `backlog.md` appears in a passing test name.
+- [ ] `dotnet test` passed, and every `Scenario:` title in `backlog.md` appears in a passing test name. In-scope API, validation, authorization, and real-persistence checks are included. A prototype is labeled `Classification: prototype` and is not called finished.
 - [ ] No unresolved ambiguous-behavior items remain open from `plan.md`.
 - [ ] Target code follows the constraints in Section 2 (DI, async, config, no `HttpContext.Current`, etc.).
 - [ ] Module has been merged following Gate 4 approval, and the backlog is updated to reflect completion.
