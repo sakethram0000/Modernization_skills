@@ -5,15 +5,22 @@ Produced by `requirement-extractor` in Phase 4; approved at HITL Gate 3; followe
 
 ---
 
+Scope: [module | whole application]
+
 ## Module
-[Name of the scoped module/domain being modernized]
+[Name of the scoped module/domain, or the application name in whole-application scope]
 
 ## Target project structure
 ```
-[proposed folder/project layout for the target .NET 8+ solution]
+[proposed folder/project layout for the target net10.0 solution]
 ```
 
 ## Build order
+In whole-application scope, list the shared foundation first (data context with every
+entity, authentication and account screens, layout and menu, home and error pages), then
+each domain in dependency order. Repeat steps 1–4 under each heading. `dotnet build` must
+pass after each one.
+
 1. Data layer — [EF Core DbContext/entities to create, mapped from which legacy
    models/tables]
 2. Service/business logic layer — [services to create, and which legacy business rules
@@ -28,6 +35,13 @@ Produced by `requirement-extractor` in Phase 4; approved at HITL Gate 3; followe
 ## Persistence
 Name the real database the new module will use, or write `Classification: prototype` and list every fake row. Do not leave this blank.
 
+## Configuration and secrets
+| Setting | Legacy source | New key | Value in this run |
+|---|---|---|---|
+| [connection string, JWT key, OAuth secret, SMTP, SMS] | [file and key, secret removed] | [`appsettings.json` key] | [empty, or labeled local development value] |
+
+Write "none" if the repo has no secrets or external services.
+
 ## Data migration notes
 [Any schema changes required, and how they will be handled — must be human-approved
 separately per `rules/legacy-guardrails.md`; write "none required" if not applicable]
@@ -38,4 +52,5 @@ this list must be explicitly addressed at HITL Gate 3, not silently carried forw
 
 ## Out of scope for this run
 [Anything adjacent that was noticed but deliberately excluded, per the scope-discipline
-guardrail]
+guardrail. In whole-application scope, repeat the out-of-scope table from
+`parity-map.md` here and in the open questions.]

@@ -20,12 +20,15 @@ its job is to let a human *see* the module working, not just trust the test repo
    supports.
 2. **Walk through every user story from `backlog.md`** against the live instance,
    confirming the behavior visually/functionally matches the Gherkin acceptance
-   criteria — not just that automated tests pass.
+   criteria — not just that automated tests pass. Sign in through the real login page.
+   In `Scope: whole application`, walk the shared foundation first (login, account
+   screens, layout and menu), then each domain, then each cross-domain story, and group
+   the walkthrough by domain.
 3. **Capture the walkthrough** as a short summary mapping each story to what was
    demonstrated (screenshot references, recorded steps, or a narrated sequence,
    depending on what the environment supports).
 4. **State the data source** in the walkthrough. A real database uses `Data source: <connection name>`. A prototype uses both `Classification: prototype` and `Data source: preview data is fake`, plus the seeded rows.
-5. **Prepare the Gate 4 sign-off request** per `rules/hitl-checkpoints.md`. Repeat every gap accepted at Gate 3. If authentication, real persistence, or an in-scope API has no passing test, stop and say the run cannot be accepted as finished. A prototype can be accepted only with the sentence `Classification: prototype`.
+5. **Prepare the Gate 4 sign-off request** per `rules/hitl-checkpoints.md`. Repeat every gap accepted at Gate 3. In `Scope: whole application`, also repeat the parity map's out-of-scope table and the `-WholeApp` result. If authentication, real persistence, or an in-scope API has no passing test, stop and say the run cannot be accepted as finished. A prototype can be accepted only with the sentence `Classification: prototype`.
 6. **On approval of a finished module:** do not merge and do not push. Tell the human the branch name and the
    exact `git merge` command, and update the backlog text to say the module is ready to merge. On approval of a prototype, update the backlog to say `Classification: prototype` and do not say it is ready to merge as the finished system.
    **On rejection:** capture the specific concern and route back to the appropriate

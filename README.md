@@ -18,3 +18,9 @@ powershell -File agent-config/scripts/inventory.ps1 -RepoRoot runs/<RepoName>/le
 powershell -File agent-config/scripts/compare-parity.ps1 -LegacyRoot runs/<RepoName>/legacy -ModernRoot runs/<RepoName>/modernized/<WebProject> -ParityMap runs/<RepoName>/modernized/parity-map.md -BaseUrl http://127.0.0.1:5099
 dotnet test runs/<RepoName>/modernized/<TestsProject>
 ```
+
+Add `-WholeApp` when Gate 2 chose the whole application. Add `-LoginUrl /Account/Login -LoginFields "Email=<user>;Password=<password>"` when the checked pages need a signed-in user.
+
+## Scope
+
+At Gate 2 you choose one module or `whole app`. Both go through the same seven phases and four gates. In whole-app mode, every controller, page, and service is either modernized or listed as out of scope with a reason you approve at Gate 3.

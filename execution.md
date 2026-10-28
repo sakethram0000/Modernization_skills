@@ -28,7 +28,7 @@ Start at Phase 1 and continue through the gates in execution.md.
 |---|---|---|
 | Phase 1 | `runs/<RepoName>/modernized/discovery-report.md` | Nothing. The agent goes on. |
 | Phase 2 | `knowledge-graph.md`, then a stop | `approved`, `approved with changes`, `rework`, or `reject` |
-| Phase 3 | `scope-proposal.md`, then a stop | `approved`. Add `use spa` only if you want React. |
+| Phase 3 | `scope-proposal.md` with module options and a whole-application option, then a stop | `approved: <module name>` for one module, or `approved: whole app` for the entire application. Add `use spa` only if you want React. |
 | Phase 4 | `backlog.md`, `plan.md`, `parity-map.md`, then a stop | `approved`, `approved with changes`, `rework`, or `reject` |
 | Phase 5 and 6 | The new site, the tests, and `test-report.md` | Nothing, unless a test fails. Then the agent fixes that phase. |
 | Phase 7 | A local URL and a short walkthrough | `approved`, `approved with changes`, `rework`, or `reject`. A prototype can be accepted only as a prototype. |

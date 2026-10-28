@@ -6,7 +6,7 @@ the mechanics; `AGENTS.md` Section 5 defines what triggers each one.
 | Gate | After phase | What's being approved |
 |---|---|---|
 | HITL 1 | 2 — Knowledge Graph | Domain boundaries are correct |
-| HITL 2 | 3 — Scope Selection | Target module + UI architecture approach |
+| HITL 2 | 3 — Scope Selection | Scope (one module, or `whole app`) + UI architecture approach |
 | HITL 3 | 4 — Specs & Backlog | Acceptance criteria + implementation plan |
 | HITL 4 | 7 — Live Preview | Final functional sign-off before merge |
 
@@ -21,7 +21,10 @@ the mechanics; `AGENTS.md` Section 5 defines what triggers each one.
 3. Wait for one of these explicit responses:
    - `approved` / `approved with changes: ...` → proceed, applying noted changes first
    - `rework: ...` → revise current phase's artifact, re-present, do not advance
-   - `reject` → stop the pipeline for this module, await new direction
+   - `reject` → stop the pipeline for this run, await new direction
+
+   At Gate 2, `approved` must name the scope: a module name or `whole app`. If it names
+   neither, ask which one before starting Phase 4.
 4. Never interpret silence, a partial reply, or an unrelated message as approval. If a
    reply is ambiguous, ask a direct clarifying question instead of proceeding.
 
@@ -34,6 +37,8 @@ Do not treat `approved` as acceptance of a finished modernization when any of th
 - authentication behavior
 - persistence in the real database
 - an API that belongs to the scoped module
+
+In `Scope: whole application`, these apply to every domain in scope. Also repeat the out-of-scope table from `parity-map.md`, and do not call the application finished while `compare-parity.ps1 -WholeApp` fails or a cross-domain dependency has no passing test.
 
 If `plan.md` says `Classification: prototype`, Gate 4 can accept the preview only as a prototype. The summary must say `Classification: prototype`. Do not say the module is ready to merge as the finished system.
 

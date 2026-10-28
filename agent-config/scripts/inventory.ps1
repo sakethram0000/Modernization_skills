@@ -8,6 +8,11 @@ if (-not (Test-Path $RepoRoot)) {
     Write-Error "Repo root not found: $RepoRoot"
     exit 1
 }
+$RepoRoot = (Resolve-Path $RepoRoot).Path.TrimEnd('\', '/')
+
+function Get-RelativePath([string]$path) {
+    $path.Substring($RepoRoot.Length).TrimStart('\', '/')
+}
 
 $csproj = Get-ChildItem -Path $RepoRoot -Recurse -Filter *.csproj -File |
     Where-Object { $_.FullName -notmatch '\\(bin|obj)\\' }
@@ -35,21 +40,37 @@ foreach ($project in $csproj) {
 }
 
 Write-Output "=== Counts ==="
+$services = @(Get-ChildItem -Path $RepoRoot -Recurse -File -Include *.svc, *.asmx -ErrorAction SilentlyContinue |
+    Where-Object { $_.FullName -notmatch '\\(bin|obj)\\' })
+$actionCount = 0
 Write-Output ("csproj={0}" -f @($csproj).Count)
 Write-Output ("aspx={0}" -f @($aspx).Count)
 Write-Output ("controllers={0}" -f @($controllers).Count)
-Write-Output ("svc={0}" -f @(Get-ChildItem -Path $RepoRoot -Recurse -Filter *.svc -File -ErrorAction SilentlyContinue).Count)
-Write-Output ("asmx={0}" -f @(Get-ChildItem -Path $RepoRoot -Recurse -Filter *.asmx -File -ErrorAction SilentlyContinue).Count)
+Write-Output ("svc={0}" -f @($services | Where-Object { $_.Extension -eq '.svc' }).Count)
+Write-Output ("asmx={0}" -f @($services | Where-Object { $_.Extension -eq '.asmx' }).Count)
 Write-Output ("edmx={0}" -f @(Get-ChildItem -Path $RepoRoot -Recurse -Filter *.edmx -File -ErrorAction SilentlyContinue).Count)
 
 Write-Output "=== Controllers ==="
 $skipMethods = @("Dispose", "ToString", "Equals", "GetHashCode")
 foreach ($controller in $controllers) {
     $text = Get-Content -Path $controller.FullName -Raw
-    $actions = [regex]::Matches($text, '(?m)^\s*public\s+(?:async\s+)?(?:override\s+)?(?:virtual\s+)?(?!void\b)[A-Za-z0-9_<>,\.\[\]\?]+\s+(\w+)\s*\(')
+    $actions = [regex]::Matches($text, '(?m)^\s*public\s+(?:async\s+)?(?:override\s+)?(?:virtual\s+)?(?!void\b)(?:[A-Za-z0-9_<>\.\[\]\?]|,\s*)+\s+(\w+)\s*\(')
     $names = @($actions | ForEach-Object { $_.Groups[1].Value } | Where-Object { $skipMethods -notcontains $_ } | Select-Object -Unique)
-    $relative = $controller.FullName.Substring($RepoRoot.Length).TrimStart('\', '/')
-    Write-Output ("{0} | actions={1}" -f $relative, ($names -join ","))
+    $actionCount += $names.Count
+    Write-Output ("{0} | actions={1}" -f (Get-RelativePath $controller.FullName), ($names -join ","))
+}
+Write-Output ("total actions={0}" -f $actionCount)
+
+Write-Output "=== Pages ==="
+if (@($aspx).Count -eq 0) { Write-Output "none" }
+foreach ($page in $aspx) {
+    Write-Output (Get-RelativePath $page.FullName)
+}
+
+Write-Output "=== Services ==="
+if ($services.Count -eq 0) { Write-Output "none" }
+foreach ($service in $services) {
+    Write-Output (Get-RelativePath $service.FullName)
 }
 
 Write-Output "=== Dependencies ==="

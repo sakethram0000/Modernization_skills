@@ -13,9 +13,10 @@ important skill in the pipeline for avoiding silent behavior drift — treat it 
 "reverse-engineering," not "summarizing."
 
 ## Inputs
-- Legacy source for the scoped module only (code-behind/controllers, services, stored
-  procedures, validation logic, any business-rule constants/config).
-- `discovery-report.md` and `knowledge-graph.md` for context.
+- Legacy source for the approved scope (code-behind/controllers, services, stored
+  procedures, validation logic, any business-rule constants/config). In
+  `Scope: whole application` that is the whole repo.
+- `discovery-report.md`, `knowledge-graph.md`, and `scope-proposal.md`.
 
 ## Process
 1. **Walk every user-facing flow in the module** (page loads, form submits, service
@@ -43,6 +44,29 @@ important skill in the pipeline for avoiding silent behavior drift — treat it 
 7. **Write the implementation plan** using `templates/implementation-plan.md`: target
    project structure for `net10.0`, build order (data → services → controllers → views),
    the mapping from Section 2 of `AGENTS.md` for this module, and a Persistence section that either names the real database or says `Classification: prototype` and lists every fake row.
+   List every secret or external-service setting (connection strings, JWT keys, OAuth
+   secrets, SMTP, SMS) in the plan's Configuration section, per rule 8 in
+   `rules/legacy-guardrails.md`.
+8. **In `Scope: whole application`**, do steps 1–7 for every domain, then:
+   a. Write one section per domain in `backlog.md`, `plan.md`, and `parity-map.md`, in
+      the order of `knowledge-graph.md`. Put a summary table at the top of `backlog.md`:
+      domain, story count, `Scenario:` count, open-question count.
+   b. Add a **Shared foundation** section first. It covers everything more than one
+      domain uses: the data context with every entity, authentication and every account
+      screen in the repo, the layout and menu, the home and error pages, and static files.
+      Write stories and scenarios for those screens too. They are not exempt because
+      they came from a project template.
+   c. Write one story per cross-domain dependency in `knowledge-graph.md`, with a
+      `Scenario:` that goes through both domains.
+   d. Check coverage against the `inventory.ps1` output. Every controller action, `.aspx`
+      page, and `.svc`/`.asmx` operation it lists has a row in the parity map's
+      controllers table or its out-of-scope table. Each out-of-scope row has a reason
+      and is repeated in `plan.md`'s open questions so Gate 3 approves it. An item is
+      out of scope only for a concrete reason, such as a stop-list match or an external
+      provider whose keys the repo does not contain. "Too big" is not a reason in this
+      scope.
+   e. Set the build order in `plan.md`: shared foundation, then domains with the fewest
+      dependencies first.
 
 ## Output artifacts
 - `backlog.md` — all user stories + Gherkin acceptance criteria for the scoped module
@@ -58,3 +82,6 @@ important skill in the pipeline for avoiding silent behavior drift — treat it 
 - Do not hand `backlog.md` to Gate 3 when it has no `Scenario:` lines. Count them.
   Each story needs the happy path and every error case the legacy code actually has
   (missing id, unknown row, failed save, validation text).
+- In `Scope: whole application`, do not shorten later domains because the files are
+  getting long. Write the domains one at a time into the same files, and count rows and
+  `Scenario:` lines per domain in the summary table.

@@ -51,7 +51,7 @@ the relevant parts if scope later expands to a module you haven't yet analyzed.
 ## Output artifact
 `runs/<RepoName>/modernized/discovery-report.md`. The clone is `runs/<RepoName>/legacy/` and is not edited. The report contains:
 - Detected 4.x version per project (from the script, not from memory)
-- Controller and action name list (this list feeds `parity-map.md` later)
+- Controller and action name list, plus the `.aspx` page and `.svc`/`.asmx` service lists, copied from the script (these lists feed `parity-map.md` and the whole-application coverage check later)
 - Project/solution structure summary
 - Authentication inventory (mode, login path, global filters, roles, anonymous actions)
 - Database inventory (EF6 models, raw SQL/stored procs referenced, connection name with the secret removed)
@@ -69,4 +69,6 @@ the relevant parts if scope later expands to a module you haven't yet analyzed.
   common source of behavior mismatches after modernization.
 - If the repo is large, prioritize breadth (a full structural map) over depth in the
   first pass; deep-dive into a specific module happens in Phase 4 once scope is chosen.
+  Discovery always covers the whole repo, so the whole-application option at Gate 2 can
+  be counted from this report.
 - The report is not done until the authentication, database, API, configuration, and dependency sections are present. Write "none" when the repo has none. Do not omit the heading.
