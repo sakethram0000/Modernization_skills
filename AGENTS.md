@@ -130,7 +130,8 @@ Ask: "Do these domain boundaries match how the business actually thinks about th
 **Actions:**
 - Present candidate domains from Phase 2 with a short rationale per domain: complexity, risk, business value, coupling to other domains.
 - Always add **Whole application** as a separate option. Give its size (controllers, actions, pages, services from the inventory), the shared parts it must build first, and what it would exclude.
-- Recommend one option, but let the human decide.
+- Show every option, each module and the whole application, in one comparison table with the same columns (actions, views or pages, services, depends on, risk), in `scope-proposal.md` and in the Gate 2 message. No option gets more detail than the others.
+- Recommend one option after the table, but let the human decide.
 **Deliverable:** `scope-proposal.md` with 2–4 ranked module candidates plus the whole-application option.
 **🛑 HITL Gate 2 — Select Scope**
 Ask: "Which module should we modernize first, or should this run modernize the whole application?" The human replies with a module name or `whole app`. The new UI stays ASP.NET Core MVC so the screens match the old ones. Ask them to reply `use spa` only if they explicitly want a React rewrite instead of the same screens. Record `Scope: module` or `Scope: whole application` at the top of `scope-proposal.md` and `plan.md`.

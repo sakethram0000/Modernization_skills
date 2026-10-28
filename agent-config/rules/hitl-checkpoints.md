@@ -23,8 +23,10 @@ the mechanics; `AGENTS.md` Section 5 defines what triggers each one.
    - `rework: ...` → revise current phase's artifact, re-present, do not advance
    - `reject` → stop the pipeline for this run, await new direction
 
-   At Gate 2, `approved` must name the scope: a module name or `whole app`. If it names
-   neither, ask which one before starting Phase 4.
+   At Gate 2, **Decisions needed from you** must show the comparison table from
+   `skills/scope-selector/SKILL.md` (every module and the whole application, same columns)
+   before the recommendation. `approved` must name the scope: a module name or `whole app`.
+   If it names neither, ask which one before starting Phase 4.
 4. Never interpret silence, a partial reply, or an unrelated message as approval. If a
    reply is ambiguous, ask a direct clarifying question instead of proceeding.
 

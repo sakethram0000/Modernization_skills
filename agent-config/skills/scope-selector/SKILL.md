@@ -36,9 +36,17 @@ quickly and with full information at HITL Gate 2.
 6. **Recommend one option** as a default (a module or the whole application), but make clear it's a recommendation, not a
    pre-decision.
 7. **Write two lists before the gate.** Dependencies: the shared data, APIs, and auth rules this module uses or that other modules use from it. Exclusions: every domain, controller, and behavior that this run will not modernize. For the whole-application option, the dependencies are the cross-domain edges in `knowledge-graph.md`, and the exclusions are only the proposed out-of-scope rows from step 5. Gate 2 is not ready until both lists are in the proposal for the recommended option.
+8. **Compare every option in one table.** Put it in `scope-proposal.md` and in the Gate 2 message itself, before the recommendation. One row per shortlisted module and one row for the whole application, with the same columns for every row: actions, views or pages, services, what it depends on, and risk. Do not give the recommended option more detail than the others. The human must be able to pick a module from the Gate 2 message alone, without opening the file.
+
+   | Option | Actions | Views / pages | Services | Depends on | Risk |
+   |---|---|---|---|---|---|
+   | <Module 1> | | | | | |
+   | <Module 2> | | | | | |
+   | Whole application | | | | | |
 
 ## Output artifact
 `runs/<RepoName>/modernized/scope-proposal.md`, also summarized in the HITL Gate 2 message:
+- The comparison table from step 8, in both the file and the Gate 2 message
 - Ranked shortlist (2–4 domains) with rationale and blast-radius notes per domain
 - The whole-application option with its counted size, shared foundation, and proposed exclusions
 - Dependencies for the recommended option
